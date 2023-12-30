@@ -1,0 +1,304 @@
+A51 MACRO ASSEMBLER  PART1                                                                11/30/2023 20:21:59 PAGE     1
+
+
+MACRO ASSEMBLER A51 V8.2.7.0
+OBJECT MODULE PLACED IN .\Objects\Part1.obj
+ASSEMBLER INVOKED BY: C:\Keil_v5-51\C51\BIN\A51.EXE Part1.a51 SET(SMALL) DEBUG PRINT(.\Listings\Part1.lst) OBJECT(.\Obje
+                      cts\Part1.obj) EP
+
+LOC  OBJ            LINE     SOURCE
+
+0000                   1     ORG     0                                       
+                       2     
+0000 759850            3             MOV     SCON, #50H
+0003 758920            4             MOV     TMOD, #20H                      
+0006 758DFD            5             MOV     TH1,  #0FDH                     
+0009 D28E              6             SETB    TR1                                                     
+000B 110D              7             CALL    MainDOOR
+000D                   8     MainDOOR:
+000D 900000            9             MOV DPTR, #0
+0010 90011C           10             MOV     DPTR, #DOOR
+                      11             
+0013                  12     SendDOOR:
+0013 E4               13             CLR             A                                                       
+0014 93               14             MOVC    A, @A+DPTR      
+0015 F9               15             MOV             R1,A
+0016 6007             16             JZ              LINE2   ;Send letter until value is 0
+                      17                                             ;then jump to LINE2 to the next line
+0018 8999             18             MOV             SBUF, R1        
+001A 3109             19             ACALL   Wait                    
+001C A3               20             INC             DPTR                                    
+001D 80F4             21             SJMP    SendDOOR        
+                      22     
+001F                  23     LINE2:
+                      24             
+001F 740A             25             MOV A, #10
+0021 C299             26             CLR TI
+0023 F599             27             MOV SBUF, A
+0025 3099FD           28             JNB TI, $
+0028 310F             29             ACALL DELAY
+002A 012C             30             AJMP MainSTART
+                      31             
+                      32     
+002C                  33     MainSTART:
+002C 900000           34             MOV DPTR, #0
+002F 900141           35             MOV     DPTR, #START
+0032 7800             36             MOV R0, #0  ;Send string
+0034 7900             37             MOV R1, #0  ;Save the value of P2
+0036 7A00             38             MOV R2, #0  ;count *
+0038 7B00             39             MOV R3, #0  ;Save the value of PASSWORD
+003A 7C00             40             MOV R4, #0  ;count correct time
+003C 7D00             41             MOV R5, #0  ;count PASSWORD line
+003E                  42     SendSTART:
+003E C299             43             CLR             TI
+0040 E4               44             CLR             A                                                       
+0041 93               45             MOVC    A, @A+DPTR      
+0042 F8               46             MOV             R0,A
+0043 6015             47             JZ              READ
+0045 8899             48             MOV             SBUF, R0        
+0047 3109             49             ACALL   Wait                    
+0049 A3               50             INC             DPTR                                    
+004A 80F2             51             SJMP    SendSTART
+                      52             
+                      53     
+004C                  54     PASS:
+004C BA050B           55             CJNE R2, #5, READ ;Count * ,R2=5 PASSWORD input completed
+                      56             
+004F 740A             57             MOV A, #10
+A51 MACRO ASSEMBLER  PART1                                                                11/30/2023 20:21:59 PAGE     2
+
+0051 C299             58             CLR TI
+0053 F599             59             MOV SBUF, A
+0055 3099FD           60             JNB TI, $
+0058 0183             61             AJMP CHECK      ;Confirm password is correct or incorrect
+                      62             
+005A                  63     READ:
+005A A9A0             64             MOV R1, P2  ; READ INPUT
+005C B9FF02           65             CJNE R1, #0FFH, READINPUT
+005F 015A             66             AJMP READ
+                      67          
+0061                  68     READINPUT:
+0061 742A             69             MOV A, #'*' ; SEND *
+0063 C299             70             CLR TI
+0065 F599             71             MOV SBUF, A
+0067 3099FD           72             JNB TI, $
+                      73                     
+                      74             
+006A 7400             75             MOV A, #0
+006C ED               76             MOV A,R5
+006D 7B00             77             MOV R3, #0
+006F 900185           78             MOV DPTR, #PASSWORD
+0072 93               79             MOVC A, @A+DPTR 
+0073 0A               80             INC R2               ;count *
+0074 FB               81             MOV R3, A            ;Save the value of PASSWORD
+0075 E5A0             82             MOV A,P2
+0077 C3               83             CLR C
+0078 9B               84             SUBB A, R3           ;Correct passward minus input
+0079 75A0FF           85             MOV P2, #0FFH        ;Change P2 from input value back to 0FFH
+007C B400CD           86             CJNE A, #0,PASS      ;input correct A=0 continue,A!=0 jump to PASS
+007F 0C               87             INC R4               ;input correct R4 +1
+0080 0D               88             INC R5               ;input correct R5 +1,read next line of password
+0081 014C             89             AJMP PASS            ;jump to PASS
+                      90     
+0083                  91     CHECK:
+0083 BC0505           92             CJNE R4, #5,MainWRONG ;Wrong R4!=5 jump to MainWRONG send WRONG
+0086 7590F8           93             MOV P1, #0F8H             ;Correct R4=5 continue
+0089 01A1             94             AJMP MainCORRECT      ;jump to MainCORRECT send CORRECT
+                      95             
+                      96     
+008B                  97     MainWRONG:
+008B 900000           98             MOV DPTR, #0
+008E 900179           99             MOV     DPTR, #WRONG
+0091 7800            100             MOV R0, #0
+0093                 101     SendWRONG:
+0093 C299            102             CLR             TI
+0095 E4              103             CLR             A                                                       
+0096 93              104             MOVC    A, @A+DPTR      
+0097 F8              105             MOV             R0,A
+0098 6033            106             JZ              LINE
+009A 8899            107             MOV             SBUF, R0        
+009C 3109            108             ACALL   Wait                    
+009E A3              109             INC             DPTR                                    
+009F 80F2            110             SJMP    SendWRONG
+00A1                 111     MainCORRECT:
+00A1 900000          112             MOV DPTR, #0
+00A4 90015C          113             MOV     DPTR, #CORRECT
+00A7 7800            114             MOV R0, #0
+00A9                 115     SendCORRECT:
+00A9 C299            116             CLR             TI
+00AB E4              117             CLR             A                                                       
+00AC 93              118             MOVC    A, @A+DPTR      
+00AD F8              119             MOV             R0,A
+00AE 6033            120             JZ              LINE1    ;Send letter until value is 0
+                     121                                              ;then jump to LINE1 to the next line
+00B0 8899            122             MOV             SBUF, R0        
+00B2 3109            123             ACALL   Wait                    
+A51 MACRO ASSEMBLER  PART1                                                                11/30/2023 20:21:59 PAGE     3
+
+00B4 A3              124             INC             DPTR                                    
+00B5 80F2            125             SJMP    SendCORRECT
+00B7                 126     MainOPEN:
+00B7 900000          127             MOV DPTR, #0
+00BA 90016A          128             MOV     DPTR, #OPEN
+00BD 7800            129             MOV R0, #0
+00BF                 130     SendOPEN:
+00BF C299            131             CLR             TI
+00C1 E4              132             CLR             A                                                       
+00C2 93              133             MOVC    A, @A+DPTR      
+00C3 F8              134             MOV             R0,A
+00C4 602A            135             JZ              LIGHT      ;jump to LIGHT 
+00C6 8899            136             MOV             SBUF, R0        
+00C8 3109            137             ACALL   Wait                    
+00CA A3              138             INC             DPTR                                    
+00CB 80F2            139             SJMP    SendOPEN  
+                     140             
+00CD                 141     LINE:
+                     142             
+00CD 740A            143             MOV A, #10
+00CF C299            144             CLR TI
+00D1 F599            145             MOV SBUF, A
+00D3 3099FD          146             JNB TI, $
+                     147             
+00D6 740A            148             MOV A, #10
+00D8 C299            149             CLR TI
+00DA F599            150             MOV SBUF, A
+00DC 3099FD          151             JNB TI, $
+00DF 310F            152             ACALL DELAY
+00E1 012C            153             AJMP MainSTART  
+00E3                 154     LINE1:
+                     155             
+00E3 740A            156             MOV A, #10
+00E5 C299            157             CLR TI
+00E7 F599            158             MOV SBUF, A
+00E9 3099FD          159             JNB TI, $
+00EC 310F            160             ACALL DELAY
+00EE 01B7            161             AJMP MainOPEN   ;jump to MainOPEN send OPEN     
+                     162             
+00F0                 163     LIGHT:
+                     164             
+00F0 740A            165             MOV A, #10
+00F2 C299            166             CLR TI
+00F4 F599            167             MOV SBUF, A
+00F6 3099FD          168             JNB TI, $
+                     169             
+00F9 740A            170             MOV A, #10
+00FB C299            171             CLR TI
+00FD F599            172             MOV SBUF, A
+00FF 3099FD          173             JNB TI, $
+                     174             
+0102 310F            175             ACALL DELAY
+0104 7590FF          176             MOV P1, #0FFH  ;P1 0F8H to 0FFH
+0107 012C            177             AJMP MainSTART
+                     178     
+0109                 179     Wait:
+0109 3099FD          180             JNB             TI, Wait                        
+010C C299            181             CLR             TI                                                      
+010E 22              182             RET
+                     183     
+010F                 184     DELAY:
+010F 7864            185                     MOV R0,#100
+0111                 186     DELAY1:
+0111 7964            187                     MOV R1,#100
+0113                 188     DELAY2:
+0113 7A64            189                     MOV R2,#100
+A51 MACRO ASSEMBLER  PART1                                                                11/30/2023 20:21:59 PAGE     4
+
+0115                 190     DELAYLOOP:
+0115 DAFE            191                     DJNZ R2,DELAYLOOP
+0117 D9FA            192                     DJNZ R1,DELAY2
+0119 D8F6            193                     DJNZ R0,DELAY1
+011B 22              194                     RET
+                     195     
+                     196     
+011C                 197     DOOR:
+011C 54686973        198             DB "This is a 5-digit passward door lock",0
+0120 20697320                
+0124 6120352D                
+0128 64696769                
+012C 74207061                
+0130 73737761                
+0134 72642064                
+0138 6F6F7220                
+013C 6C6F636B                
+0140 00                      
+0141                 199     START:
+0141 456E7465        200             DB "Enter passcode to unlock: ",0
+0145 72207061                
+0149 7373636F                
+014D 64652074                
+0151 6F20756E                
+0155 6C6F636B                
+0159 3A2000                  
+015C                 201     CORRECT:
+015C 50494E20        202             DB "PIN CORRECT! ",0
+0160 434F5252                
+0164 45435421                
+0168 2000                    
+016A                 203     OPEN:
+016A 444F4F52        204             DB "DOOR OPENDED! ",0
+016E 204F5045                
+0172 4E444544                
+0176 212000                  
+0179                 205     WRONG:
+0179 50494E20        206             DB "PIN WRONG! ",0
+017D 57524F4E                
+0181 47212000                
+0185                 207     PASSWORD:
+0185 FD              208             DB 11111101B
+0186 FB              209             DB 11111011B
+0187 F7              210             DB 11110111B
+0188 EF              211             DB 11101111B
+0189 DF              212             DB 11011111B
+                     213     
+                     214     END
+A51 MACRO ASSEMBLER  PART1                                                                11/30/2023 20:21:59 PAGE     5
+
+SYMBOL TABLE LISTING
+------ ----- -------
+
+
+N A M E             T Y P E  V A L U E   ATTRIBUTES
+
+CHECK. . . . . . .  C ADDR   0083H   A   
+CORRECT. . . . . .  C ADDR   015CH   A   
+DELAY. . . . . . .  C ADDR   010FH   A   
+DELAY1 . . . . . .  C ADDR   0111H   A   
+DELAY2 . . . . . .  C ADDR   0113H   A   
+DELAYLOOP. . . . .  C ADDR   0115H   A   
+DOOR . . . . . . .  C ADDR   011CH   A   
+LIGHT. . . . . . .  C ADDR   00F0H   A   
+LINE . . . . . . .  C ADDR   00CDH   A   
+LINE1. . . . . . .  C ADDR   00E3H   A   
+LINE2. . . . . . .  C ADDR   001FH   A   
+MAINCORRECT. . . .  C ADDR   00A1H   A   
+MAINDOOR . . . . .  C ADDR   000DH   A   
+MAINOPEN . . . . .  C ADDR   00B7H   A   
+MAINSTART. . . . .  C ADDR   002CH   A   
+MAINWRONG. . . . .  C ADDR   008BH   A   
+OPEN . . . . . . .  C ADDR   016AH   A   
+P1 . . . . . . . .  D ADDR   0090H   A   
+P2 . . . . . . . .  D ADDR   00A0H   A   
+PASS . . . . . . .  C ADDR   004CH   A   
+PASSWORD . . . . .  C ADDR   0185H   A   
+READ . . . . . . .  C ADDR   005AH   A   
+READINPUT. . . . .  C ADDR   0061H   A   
+SBUF . . . . . . .  D ADDR   0099H   A   
+SCON . . . . . . .  D ADDR   0098H   A   
+SENDCORRECT. . . .  C ADDR   00A9H   A   
+SENDDOOR . . . . .  C ADDR   0013H   A   
+SENDOPEN . . . . .  C ADDR   00BFH   A   
+SENDSTART. . . . .  C ADDR   003EH   A   
+SENDWRONG. . . . .  C ADDR   0093H   A   
+START. . . . . . .  C ADDR   0141H   A   
+TH1. . . . . . . .  D ADDR   008DH   A   
+TI . . . . . . . .  B ADDR   0098H.1 A   
+TMOD . . . . . . .  D ADDR   0089H   A   
+TR1. . . . . . . .  B ADDR   0088H.6 A   
+WAIT . . . . . . .  C ADDR   0109H   A   
+WRONG. . . . . . .  C ADDR   0179H   A   
+
+
+REGISTER BANK(S) USED: 0 
+
+
+ASSEMBLY COMPLETE.  0 WARNING(S), 0 ERROR(S)

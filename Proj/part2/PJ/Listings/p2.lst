@@ -1,0 +1,123 @@
+A51 MACRO ASSEMBLER  P2                                                                   12/05/2023 10:12:15 PAGE     1
+
+
+MACRO ASSEMBLER A51 V8.2.7.0
+OBJECT MODULE PLACED IN .\Objects\p2.obj
+ASSEMBLER INVOKED BY: C:\Keil_v5-51\C51\BIN\A51.EXE p2.asm SET(SMALL) DEBUG PRINT(.\Listings\p2.lst) OBJECT(.\Objects\p2
+                      .obj) EP
+
+LOC  OBJ            LINE     SOURCE
+
+0000                   1     ORG 0H 
+                       2     
+0000                   3     start:
+                       4         ; Initialization
+0000 758921            5         MOV TMOD, #21H ; Set Timer 0 in mode 1
+0003 758800            6         MOV TCON, #0 ; Clear Timer 0 control register
+0006 7B00              7             MOV R3, #0 ;COUNTER
+0008 741F              8             MOV A,#01FH
+000A 900033            9             MOV DPTR,#33H
+000D F0               10             MOVX @DPTR,A
+000E D293             11             SETB P1.3;
+                      12     
+0010                  13     standby:
+                      14         ; Standby state
+0010 7580FF           15         MOV P0, #0FFH ; Set Port 0 to FFH
+0013 75B000           16         MOV P3, #0 ; Set Port 3 to 0
+0016 D293             17         SETB P1.3; Set Port 1 pin 3 to 1
+0018 4390F6           18             ORL P1,#11110110B
+001B 7B04             19             MOV R3, #4 ; Set R3 as counter which store the value to 4
+                      20             ;SETB P1.0; Set Port 1 pin 3 to 1
+001D 2090F0           21             JB P1.0, standby
+                      22     
+0020                  23     activate_terminal_1:
+                      24     
+0020 E0               25             MOVX A,@DPTR
+0021 758C26           26         MOV TH0, #26H
+0024 758AFB           27         MOV TL0, #0FBH
+0027 D290             28             SETB P1.0; Set Port 1 pin 3 to 1
+0029 F5B0             29             MOV P3, A
+002B C293             30         CLR P1.3 ; Set Port 1 pin 3 to 0
+002D 7580FE           31             MOV P0, #0FEH ; Set Port 0 to FFh
+                      32             ;MOV P0.0, #0FEH ; Set Port 0 PIN 0 to 1111 1110 in binary
+                      33     
+                      34         ; Reset Timer 0
+0030 758C00           35         MOV TH0, #0
+0033 758A00           36         MOV TL0, #0
+                      37     
+0036 8000             38         JMP activate_terminal_2 ; Jump to the common part for Activate Terminal 2
+                      39     
+0038                  40     activate_terminal_2:
+                      41     
+0038 758C26           42         MOV TH0, #26H
+003B 758AFB           43         MOV TL0, #0FBH
+003E 7580FD           44             MOV P0, #0FDH ; Set Port 0 to FFh
+                      45         ;MOV P0.1, #0FDH ; Set Port 0 PIN 1 to 1111 1101 in binary
+                      46     
+                      47         ; Reset Timer 0
+0041 758C00           48         MOV TH0, #0
+0044 758A00           49         MOV TL0, #0
+                      50     
+0047 8000             51         JMP activate_terminal_3 ; Jump to the common part for Activate Terminal 3
+                      52     
+0049                  53     activate_terminal_3:
+                      54     
+0049 758C26           55         MOV TH0, #26H
+004C 758AFB           56         MOV TL0, #0FBH
+004F 7580FB           57             MOV P0, #0FBH ; Set Port 0 to FFh
+A51 MACRO ASSEMBLER  P2                                                                   12/05/2023 10:12:15 PAGE     2
+
+                      58         ;MOV P0.2, #0FBH ; Set Port 0 PIN 2 to 1111 1011 in binary
+                      59     
+                      60         ; Reset Timer 0
+0052 758C00           61         MOV TH0, #0
+0055 758A00           62         MOV TL0, #0
+                      63     
+0058 8000             64         JMP activate_terminal_4 ; Jump to the common part for Activate Terminal 4
+                      65     
+005A                  66     activate_terminal_4:
+                      67     
+005A 758C26           68         MOV TH0, #26H
+005D 758AFB           69         MOV TL0, #0FBH
+0060 7580F7           70             MOV P0, #0F7H ; Set Port 0 to FFh
+                      71         ;MOV P0.3, #0F7H ; Set Port 0 to 1111 0111 in binary
+                      72     
+                      73         ; Reset Timer 0
+0063 758C00           74         MOV TH0, #0
+0066 758A00           75         MOV TL0, #0
+                      76     
+0069 1B               77             DEC R3 ; Make the counter=counter-1
+                      78     
+                      79         ; Jump back to activate_terminal_1
+006A BB00B3           80         CJNE R3, #0, activate_terminal_1 ;
+                      81             
+                      82             ; Check if counter is zero
+006D 0110             83         AJMP standby; Jump to standby if counter is zero
+                      84     END
+A51 MACRO ASSEMBLER  P2                                                                   12/05/2023 10:12:15 PAGE     3
+
+SYMBOL TABLE LISTING
+------ ----- -------
+
+
+N A M E              T Y P E  V A L U E   ATTRIBUTES
+
+ACTIVATE_TERMINAL_1  C ADDR   0020H   A   
+ACTIVATE_TERMINAL_2  C ADDR   0038H   A   
+ACTIVATE_TERMINAL_3  C ADDR   0049H   A   
+ACTIVATE_TERMINAL_4  C ADDR   005AH   A   
+P0. . . . . . . . .  D ADDR   0080H   A   
+P1. . . . . . . . .  D ADDR   0090H   A   
+P3. . . . . . . . .  D ADDR   00B0H   A   
+STANDBY . . . . . .  C ADDR   0010H   A   
+START . . . . . . .  C ADDR   0000H   A   
+TCON. . . . . . . .  D ADDR   0088H   A   
+TH0 . . . . . . . .  D ADDR   008CH   A   
+TL0 . . . . . . . .  D ADDR   008AH   A   
+TMOD. . . . . . . .  D ADDR   0089H   A   
+
+
+REGISTER BANK(S) USED: 0 
+
+
+ASSEMBLY COMPLETE.  0 WARNING(S), 0 ERROR(S)
